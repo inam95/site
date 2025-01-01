@@ -1,12 +1,11 @@
 import type { Config } from "tailwindcss";
-import tailwindTypography from "@tailwindcss/typography";
 
 export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./mdx-components.tsx",
+    "./src/mdx-components.tsx",
   ],
   theme: {
     extend: {
@@ -16,5 +15,4 @@ export default {
       },
     },
   },
-  plugins: [tailwindTypography],
 } satisfies Config;

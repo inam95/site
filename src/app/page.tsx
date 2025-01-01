@@ -11,7 +11,7 @@ export default function Home() {
           I&apos;m <span className="font-bold">Dave</span>.
         </span>
       </p>
-      <Posts />
+      {/* <Posts /> */}
     </main>
   );
 }

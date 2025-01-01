@@ -1,7 +1,6 @@
 import React, { ComponentPropsWithoutRef } from "react";
 import { Link } from "next-view-transitions";
 import { highlight } from "sugar-high";
-// import { AnimatedName } from "@/components/name";
 
 type HeadingProps = ComponentPropsWithoutRef<"h1">;
 type ParagraphProps = ComponentPropsWithoutRef<"p">;
@@ -95,7 +94,6 @@ const components = {
       {...props}
     />
   ),
-  // AnimatedName,
 };
 
 declare global {

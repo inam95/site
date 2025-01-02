@@ -2,6 +2,7 @@
 
 import path from "path";
 import fs from "fs";
+import { sortPosts } from "./utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isBlogHeaderData(data: any): data is BlogMetadata {
@@ -15,7 +16,7 @@ function isBlogHeaderData(data: any): data is BlogMetadata {
 }
 
 export async function getBlogPosts() {
-  const blogPostsDirPath = path.join(process.cwd(), "src/app/blogs");
+  const blogPostsDirPath = path.join(process.cwd(), "src/app/n");
   const postDirs = fs
     .readdirSync(blogPostsDirPath, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
@@ -23,7 +24,7 @@ export async function getBlogPosts() {
 
   const blogs = await Promise.all(
     postDirs.map(async (postDir) => {
-      const { metadata } = await import(`@/app/blogs/${postDir}/page.mdx`);
+      const { metadata } = await import(`@/app/n/${postDir}/page.mdx`);
       if (isBlogHeaderData(metadata)) {
         return metadata;
       }
@@ -32,5 +33,5 @@ export async function getBlogPosts() {
     })
   );
 
-  return blogs.filter((blog) => blog.isPublished);
+  return sortPosts(blogs.filter((blog) => blog.isPublished));
 }

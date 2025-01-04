@@ -1,8 +1,40 @@
 import { PostItem } from "@/components/post-item";
-import { getBlogPosts } from "@/lib/blogs";
+import { promises as fs } from "fs";
+import { compileMDX } from "next-mdx-remote/rsc";
+import path from "path";
 
 export default async function Home() {
-  const posts = await getBlogPosts();
+  const filenames = await fs.readdir(
+    path.join(process.cwd(), "src/content"),
+    "utf-8"
+  );
+
+  const posts = await Promise.all(
+    filenames.map(async (filename) => {
+      const content = await fs.readFile(
+        path.join(process.cwd(), "src/content", filename),
+        "utf-8"
+      );
+      const { frontmatter } = await compileMDX<{
+        title: string;
+        description: string;
+        publishDate: string;
+        slug: string;
+        isPublished: boolean;
+      }>({
+        source: content,
+        options: {
+          parseFrontmatter: true,
+        },
+      });
+
+      return {
+        ...frontmatter,
+      };
+    })
+  );
+
+  console.log(posts);
   return (
     <div className="container max-w-4xl py-6 lg:py-10">
       <div className="flex flex-col items-start gap-4 md:flex-row md:justify-between md:gap-8">

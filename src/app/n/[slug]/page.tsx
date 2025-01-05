@@ -1,7 +1,12 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { compileMDX } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypePrettyCode from "rehype-pretty-code";
 
+import "@/styles/mdx.css";
 import { MainNav } from "@/components/main-nav";
 import { Callout } from "@/components/callout";
 
@@ -51,6 +56,23 @@ export default async function Page({ params }: Props) {
     source: content,
     options: {
       parseFrontmatter: true,
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [
+          rehypeSlug,
+          [rehypePrettyCode, { theme: "github-dark" }],
+          [
+            rehypeAutolinkHeadings,
+            {
+              behavior: "wrap",
+              properties: {
+                className: ["subheading-anchor"],
+                ariaLabel: "Link to section",
+              },
+            },
+          ],
+        ],
+      },
     },
     components: {
       MainNav,

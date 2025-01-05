@@ -1,9 +1,19 @@
 import { PostItem } from "@/components/post-item";
+import QueryPagination from "@/components/query-pagination";
 import { promises as fs } from "fs";
 import { compileMDX } from "next-mdx-remote/rsc";
 import path from "path";
 
-export default async function Home() {
+const POST_PER_PAGE = 2;
+
+interface Props {
+  searchParams: {
+    page?: string;
+  };
+}
+
+export default async function Page({ searchParams }: Props) {
+  const currentPage = searchParams.page ? parseInt(searchParams.page) : 1;
   const filenames = await fs.readdir(
     path.join(process.cwd(), "src/content"),
     "utf-8"
@@ -33,8 +43,15 @@ export default async function Home() {
       };
     })
   );
+  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
-  console.log(posts);
+  const displayPosts = posts.slice(
+    (currentPage - 1) * POST_PER_PAGE,
+    currentPage * POST_PER_PAGE
+  );
+
+  console.log(displayPosts);
+
   return (
     <div className="container max-w-4xl py-6 lg:py-10">
       <div className="flex flex-col items-start gap-4 md:flex-row md:justify-between md:gap-8">
@@ -48,9 +65,9 @@ export default async function Home() {
       <div className="grid grid-cols-12 gap-3 mt-8">
         <div className="col-span-12 col-start-1 sm:col-span-8">
           <hr />
-          {posts?.length > 0 ? (
+          {displayPosts?.length > 0 ? (
             <ul className="flex flex-col">
-              {posts.map((post) => {
+              {displayPosts.map((post) => {
                 const { slug, publishDate, title, description } = post;
                 return (
                   <li key={slug}>
@@ -67,6 +84,10 @@ export default async function Home() {
           ) : (
             <p>Nothing to see here yet</p>
           )}
+          <QueryPagination
+            totalPages={totalPages}
+            className="justify-end mt-4"
+          />
         </div>
       </div>
     </div>

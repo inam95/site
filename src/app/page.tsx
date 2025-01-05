@@ -7,13 +7,14 @@ import path from "path";
 const POST_PER_PAGE = 2;
 
 interface Props {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 }
 
 export default async function Page({ searchParams }: Props) {
-  const currentPage = searchParams.page ? parseInt(searchParams.page) : 1;
+  const page = (await searchParams).page;
+  const currentPage = page ? parseInt(page) : 1;
   const filenames = await fs.readdir(
     path.join(process.cwd(), "src/content"),
     "utf-8"
@@ -49,8 +50,6 @@ export default async function Page({ searchParams }: Props) {
     (currentPage - 1) * POST_PER_PAGE,
     currentPage * POST_PER_PAGE
   );
-
-  console.log(displayPosts);
 
   return (
     <div className="container max-w-4xl py-6 lg:py-10">

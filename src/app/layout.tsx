@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     default: siteConfig.name,
   },
   description: siteConfig.description,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url),
 };
 
 export default function RootLayout({

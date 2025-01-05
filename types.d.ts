@@ -1,5 +1,7 @@
-type BlogPost = {
-  id: string;
+interface BlogMetadata {
   title: string;
-  date: string;
-};
+  description: string;
+  isPublished: boolean;
+  slug: string;
+  publishDate: string;
+}

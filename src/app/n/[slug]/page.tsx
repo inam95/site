@@ -1,16 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { compileMDX } from "next-mdx-remote/rsc";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypePrettyCode from "rehype-pretty-code";
 
-import "@/styles/mdx.css";
-import { MainNav } from "@/components/main-nav";
-import { Callout } from "@/components/callout";
 import { siteConfig } from "@/config/site";
-import { notFound } from "next/navigation";
+import { getPostBySlug } from "@/lib/blogs";
+import "@/styles/mdx.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -18,23 +11,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props) {
   const slug = (await params).slug;
-  const content = await fs.readFile(
-    path.join(process.cwd(), "src/content", `${slug}.mdx`),
-    "utf-8"
-  );
-
-  const { frontmatter } = await compileMDX<{
-    title: string;
-    description: string;
-    publishDate: string;
-    slug: string;
-    isPublished: boolean;
-  }>({
-    source: content,
-    options: {
-      parseFrontmatter: true,
-    },
-  });
+  const { frontmatter } = await getPostBySlug(slug);
 
   const ogSearchParams = new URLSearchParams();
   ogSearchParams.append("title", frontmatter.title);
@@ -81,49 +58,7 @@ export async function generateStaticParams() {
 
 export default async function Page({ params }: Props) {
   const slug = (await params).slug;
-  let content = "";
-  try {
-    content = await fs.readFile(
-      path.join(process.cwd(), "src/content", `${slug}.mdx`),
-      "utf-8"
-    );
-  } catch {
-    notFound();
-  }
-
-  const data = await compileMDX<{
-    title: string;
-    description: string;
-    publishDate: string;
-    slug: string;
-    isPublished: boolean;
-  }>({
-    source: content,
-    options: {
-      parseFrontmatter: true,
-      mdxOptions: {
-        remarkPlugins: [remarkGfm],
-        rehypePlugins: [
-          rehypeSlug,
-          [rehypePrettyCode, { theme: "github-dark" }],
-          [
-            rehypeAutolinkHeadings,
-            {
-              behavior: "wrap",
-              properties: {
-                className: ["subheading-anchor"],
-                ariaLabel: "Link to section",
-              },
-            },
-          ],
-        ],
-      },
-    },
-    components: {
-      MainNav,
-      Callout,
-    },
-  });
+  const data = await getPostBySlug(slug);
 
   return (
     <article className="container py-6 prose dark:prose-invert max-w-3xl mx-auto">

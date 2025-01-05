@@ -1,8 +1,6 @@
 import { PostItem } from "@/components/post-item";
 import QueryPagination from "@/components/query-pagination";
-import { promises as fs } from "fs";
-import { compileMDX } from "next-mdx-remote/rsc";
-import path from "path";
+import { getAllContent } from "@/lib/blogs";
 
 const POST_PER_PAGE = 2;
 
@@ -14,36 +12,10 @@ interface Props {
 
 export default async function Page({ searchParams }: Props) {
   const page = (await searchParams).page;
+
+  const posts = await getAllContent();
+
   const currentPage = page ? parseInt(page) : 1;
-  const filenames = await fs.readdir(
-    path.join(process.cwd(), "src/content"),
-    "utf-8"
-  );
-
-  const posts = await Promise.all(
-    filenames.map(async (filename) => {
-      const content = await fs.readFile(
-        path.join(process.cwd(), "src/content", filename),
-        "utf-8"
-      );
-      const { frontmatter } = await compileMDX<{
-        title: string;
-        description: string;
-        publishDate: string;
-        slug: string;
-        isPublished: boolean;
-      }>({
-        source: content,
-        options: {
-          parseFrontmatter: true,
-        },
-      });
-
-      return {
-        ...frontmatter,
-      };
-    })
-  );
   const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
   const displayPosts = posts.slice(

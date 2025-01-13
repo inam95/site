@@ -73,7 +73,7 @@ export async function getPostBySlug(slug: string) {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
           rehypeSlug,
-          [rehypePrettyCode, { theme: "github-dark" }],
+          [rehypePrettyCode, { theme: "night-owl" }],
           [
             rehypeAutolinkHeadings,
             {

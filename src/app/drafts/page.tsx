@@ -13,7 +13,7 @@ interface Props {
 export default async function Page({ searchParams }: Props) {
   const page = (await searchParams).page;
 
-  const posts = await getAllContent();
+  const posts = await getAllContent(true);
 
   const currentPage = page ? parseInt(page) : 1;
   const totalPages = Math.ceil(posts.length / POST_PER_PAGE);

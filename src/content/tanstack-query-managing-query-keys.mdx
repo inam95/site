@@ -6,11 +6,14 @@ isPublished: false
 slug: "tanstack-query-managing-query-keys"
 ---
 
-When working with Tanstack Query, managing query keys is a crucial part as the application grows. In this post, I will walkthrough the different approaches I have tried, share the final approach I have settled on, and highlight some best practices.
+import { CustomLink } from "@/components/custom-link";
+
+As your application grows, so does the complexity of managing query keys in Tanstack Query. In this post, I'll explore a few different strategies for organizing those keys and share the approach I’ve found to be most effective.
 
 ## Approach 1: Hardcoded Query Keys
 
-Usually, I create a custom hook for each query and use that hook to fetch the data. In the initial stages, I hardcoded the query keys in the custom hook itself. This is the first approach I'm gonna talk about. It will look something like this:
+In the early stages of development, it’s common to hardcode query keys directly in custom hooks.\
+For example:
 
 ```ts
 export function useGetPosts({ sort, order }: PostSortingCriteria) {
@@ -19,16 +22,9 @@ export function useGetPosts({ sort, order }: PostSortingCriteria) {
     queryFn: () => getPosts({ sort, order }),
   });
 }
-
-export function useGetPost(id: number) {
-  return useQuery({
-    queryKey: ["posts", id],
-    queryFn: () => getPost(id),
-  });
-}
 ```
 
-This approach is simple and straightforward. However, it has some downsides. Let's say I want to invalidate all the queries related to posts when a new post is created. I have to manually invalidate all the queries.
+This setup is simple and works fine when your app is small. But as soon as you need to invalidate several queries—for example, after creating a new post—you have to remember each query key and invalidate them individually:
 
 ```ts
 useMutation({
@@ -39,9 +35,11 @@ useMutation({
 });
 ```
 
+Hardcoding is easy to start with but can become cumbersome to maintain in larger applications.
+
 ## Approach 2: Define Query Keys in a separate file as constants
 
-It looks like this:
+Instead of hardcoding query keys in each hook, you can keep them in one place for easier reuse. For example
 
 ```ts
 export const POSTS = ["posts"];
@@ -55,16 +53,22 @@ export const POST_DETAIL = (id: number) => ["posts", id];
 export const POST_COMMENTS = (id: number) => ["posts", id, "comments"];
 ```
 
-This was a step in the right direction. Now, I can use these constants in my custom hooks. Few downsides I noticed with this approach:
+This is a step in the right direction—you centralize keys and avoid scattering them throughout your code. However, a few issues can surface:
 
-- The file started to grow large as the application grows.
-- It was not clear which query keys are related to which resource.
-- For someone new to the codebase, it was hard to understand and navigate.
-- I was repeating the same query keys in multiple places. eg: `'posts'` is repeated in all the query keys. `'list'` is repeated in few query keys.
+- **File bloat**: As the application grows, this file can become massive.
+- **Ambiguity**: It’s not always clear which resource a key belongs to.
+- **Navigation** hurdles: New team members (or even you, after some time) might find it tricky to locate the right constant.
+- **Repetition**: Shared fragments like "posts" or "list" are repeated in multiple keys.
 
-## Approach 3: **Query Key Factories**
+## Approach 3: **Query Key Factories** (My preferred approach)
 
-I created a query key factory for each resource. It looks like this:
+### Why Query Key Factories?
+
+When your codebase grows, scattering query keys throughout files or repeating them in multiple hooks can become a maintenance headache. Query Key Factories group related keys in a single place and make your data-fetching layer more organized and scalable.
+
+### Basic Implementation
+
+A basic version of a “factory” for posts might look like this:
 
 ```ts
 export const postQueryKey = {
@@ -80,9 +84,11 @@ export const postQueryKey = {
 };
 ```
 
-And I still saw that repeating the same query keys issue and the query keys were not semantic, some were just arrays and others were functions which returned an array.
+However, you can take this further to clean up the `hardcoded` strings and add more clarity.
 
-To solve this, I created more specific keys using other query keys. It looks like this:
+### Refining Query Key Factories
+
+Instead of repeating `"posts"` in every key, we build from a base key. Here’s how that might look:
 
 ```ts
 export const postQueryKeys = {
@@ -97,7 +103,7 @@ export const postQueryKeys = {
 };
 ```
 
-Query Key Factories are a great way to organize and manage query keys. It is easy to understand, navigate, and maintain. As an example If I want to invalidate all the queries related to posts, I can do it like this:
+By composing from smaller keys (_all_, _allList_, etc.), you avoid hardcoding the same strings everywhere and keep your keys structured and more intuitive.
 
 ```ts
 useMutation({
@@ -108,38 +114,50 @@ useMutation({
 });
 ```
 
-## Best Practices
+### Best Practices (with an Example)
 
-1. Use **const assertion** for query keys to get better type inference.
+Below is a more advanced example that also incorporates recommended best practices. Notice how\
+we:
 
-2. Create one factory per feature/resource and define all query keys in a particular factory by starting with the same prefix.
-
-3. Keep `queryKey` and `queryFn` close to each other
-
-   This is a concept called **Query ~~Key~~ Factories** and it's idea is to have an object that will not only contain query keys, but also the query option object.
+1. **Use const assertions** for better type inference.
+2. Keep `queryKey` and `queryFn` together for clarity.
+3. **Create one factory per resource** (this example is for posts).
+4. **Leverage composition** to build on simpler keys.
 
 ```ts
 import { queryOptions } from "@tanstack/react-query";
 
+// Create one factory for all post-related queries
 export const postQueryKeys = {
+  // Keep `queryKey` and `queryFn` close (using queryOptions to bundle them)
+
+  // Use const assertions for better type inference
   all: () =>
     queryOptions({
-      queryKey: ["posts"],
+      queryKey: ["posts"] as const,
     }),
+
+  // Compose from simpler keys
   allList: () =>
     queryOptions({
-      queryKey: [...postQueryKeys.all(), "list"],
+      queryKey: [...postQueryKeys.all(), "list"] as const,
     }),
+
+  // A key that includes a query function as well
   list: ({ sort, order }: PostSortingCriteria) =>
     queryOptions({
       queryKey: [...postQueryKeys.allList(), { sort, order }],
       queryFn: () => fetchPosts({ sort, order }),
     }),
+
+  // A detail key that extends the base key
   detail: (id: number) =>
     queryOptions({
       queryKey: [...postQueryKeys.all(), id],
       queryFn: () => fetchPost(id),
     }),
+
+  // A comments key building on the detail key
   comments: (id: number) =>
     queryOptions({
       queryKey: [...postQueryKeys.detail(id), "comments"],
@@ -148,16 +166,26 @@ export const postQueryKeys = {
 };
 ```
 
-Now with this approach, calling `useQuery` or invalidating queries is much easier and cleaner.
+Here’s why this approach is effective and powerful:
+
+- You can see at a glance how data is fetched and how it’s keyed.
+- It's easy to extend or modify keys without breaking other parts of your code.
+
+### Putting It All Together (Usage)
+
+With Query Key Factories in place, using these keys in your components is straightforward:
 
 ```ts
+// Example 1: Fetching a sorted list of posts
 const { data } = useQuery(postQueryKeys.list({ sort: "title", order: "asc" }));
 
+// Example 2: Overriding options while using the factory’s defaults
 const { data } = useQuery({
   ...postQueryKeys.detail(1),
   staleTime: 1000,
 });
 
+// Example 3: Invalidating all post-related queries
 useMutation({
   mutationFn: createPost,
   onSuccess: () => {
@@ -166,6 +194,24 @@ useMutation({
 });
 ```
 
-## Conclusion
+Because everything is centrally defined, you only need to call the relevant factory function—no more searching for the right query key string.
 
-Managing query keys is a crucial part of working with Tanstack Query. And this is my findings on how I organize and manage query keys in Tanstack Query. I hope you find this helpful.
+## Final Thoughts
+
+Query Key Factories keep your Tanstack Query usage clean, organized, and easier to maintain. By structuring keys around a resource, composing them to avoid duplication, and returning the full set of query options, you’ll have a more consistent, scalable, and discoverable data-fetching layer.
+
+There’s a community library called <CustomLink href="https://github.com/lukemorales/query-key-factory">query-key-factory</CustomLink> that provides utilities for structuring and managing Tanstack Query keys. It’s well worth checking out if you’re interested in this pattern. The main caveat is that it closely tracks Tanstack Query updates—so whenever Tanstack Query evolves, this library may require an update as well.
+
+And other resources I found helpful:
+
+1. <CustomLink href="https://tkdodo.eu/blog/effective-react-query-keys">
+     Effective React Query Keys
+   </CustomLink>
+
+2. <CustomLink href="https://tanstack.com/query/latest/docs/framework/react/guides/query-keys">
+     Tanstack Query: Query Keys
+   </CustomLink>
+
+3. <CustomLink href="https://www.youtube.com/watch?v=8KWMOCW6LCU">
+     Tanstack Query, Query Keys Best Practices (YouTube)
+   </CustomLink>

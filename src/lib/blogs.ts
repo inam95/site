@@ -10,6 +10,7 @@ import rehypePrettyCode from "rehype-pretty-code";
 import { notFound } from "next/navigation";
 
 import { Callout } from "@/components/callout";
+import { CustomLink } from "@/components/custom-link";
 import { sortPosts } from "./utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isBlogHeaderData(data: any): data is BlogMetadata {
@@ -22,7 +23,7 @@ function isBlogHeaderData(data: any): data is BlogMetadata {
   );
 }
 
-export async function getAllContent() {
+export async function getAllContent(all: boolean = false) {
   const blogPostsDirPath = path.join(process.cwd(), "src/content");
   const filenames = fs
     .readdirSync(blogPostsDirPath, { withFileTypes: true })
@@ -51,7 +52,7 @@ export async function getAllContent() {
     })
   );
 
-  return sortPosts(posts);
+  return sortPosts(posts).filter((post) => all || post.isPublished);
 }
 
 export async function getPostBySlug(slug: string) {
@@ -73,7 +74,7 @@ export async function getPostBySlug(slug: string) {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
           rehypeSlug,
-          [rehypePrettyCode, { theme: "github-dark" }],
+          [rehypePrettyCode, { theme: "night-owl" }],
           [
             rehypeAutolinkHeadings,
             {
@@ -89,6 +90,7 @@ export async function getPostBySlug(slug: string) {
     },
     components: {
       Callout,
+      CustomLink,
     },
   });
 

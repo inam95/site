@@ -9,8 +9,8 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypePrettyCode from "rehype-pretty-code";
 import { notFound } from "next/navigation";
 
-import { Callout } from "@/components/callout";
-import { CustomLink } from "@/components/custom-link";
+import { Callout } from "@/components/mdx-components/callout";
+import { CustomLink } from "@/components/mdx-components/custom-link";
 import { sortPosts } from "./utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isBlogHeaderData(data: any): data is BlogMetadata {

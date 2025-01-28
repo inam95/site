@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Inam's Blog",
+  name: "InamKōdo",
   url: "https://inam.dev",
   description: "My ramblings on web development, programming, and tech.",
   author: "Inamul Hassan",

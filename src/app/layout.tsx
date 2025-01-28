@@ -1,13 +1,27 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ViewTransitions } from "next-view-transitions";
-import { cn } from "@/lib/utils";
-import { SiteHeader } from "@/components/site-header";
+import { Navbar } from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import { siteConfig } from "@/config/site";
-import { Providers } from "@/components/providers";
+import type { Metadata } from "next";
+import { ViewTransitions } from "next-view-transitions";
+import { Inter, M_PLUS_Rounded_1c, Noto_Sans_JP } from "next/font/google";
+import "./globals.css";
+import { Footer } from "@/components/footer";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  variable: "--font-noto-sans-jp",
+});
+
+const mPlus = M_PLUS_Rounded_1c({
+  weight: ["500", "700"],
+  subsets: ["latin"],
+  variable: "--font-mplus",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -25,19 +39,22 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en" className="scroll-pt-[3.5rem]" suppressHydrationWarning>
+      <html lang="en" className="scroll-pt-[3.8rem]" suppressHydrationWarning>
         <body
-          className={cn(
-            "min-h-screen bg-background font-sans antialiased",
-            inter.variable
-          )}
+          className={`${inter.variable} ${notoSansJP.variable} ${mPlus.variable} min-h-screen flex flex-col bg-background`}
         >
-          <Providers>
-            <div className="relative flex min-h-dvh flex-col bg-background">
-              <SiteHeader />
-              <main className="flex-1">{children}</main>
-            </div>
-          </Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navbar />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <Footer />
+          </ThemeProvider>
         </body>
       </html>
     </ViewTransitions>

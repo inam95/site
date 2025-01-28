@@ -3,7 +3,9 @@ import path from "path";
 
 import { siteConfig } from "@/config/site";
 import { getPostBySlug } from "@/lib/blogs";
+import { formatDate } from "@/lib/utils";
 import "@/styles/mdx.css";
+import { CalendarDays } from "lucide-react";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -61,14 +63,20 @@ export default async function Page({ params }: Props) {
   const data = await getPostBySlug(slug);
 
   return (
-    <article className="container py-6 prose dark:prose-invert max-w-3xl mx-auto">
-      <h1 className="mb-2">{data.frontmatter.title}</h1>
-      {data.frontmatter.description ? (
-        <p className="text-xl mt-0 text-muted-foreground">
+    <article className="max-w-3xl mx-auto prose dark:prose-invert ">
+      <header className="text-left">
+        <h1 className="mb-4">{data.frontmatter.title}</h1>
+        <p className="text-muted-foreground my-1">
           {data.frontmatter.description}
         </p>
-      ) : null}
-      <hr className="my-4" />
+        {/* <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-muted-foreground"> */}
+        <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+          <CalendarDays className="h-4 w-4 mr-2" />
+          <time>{formatDate(data.frontmatter.publishDate)}</time>
+        </div>
+        {/* </div> */}
+        <div className="japanese-divider" />
+      </header>
       {data.content}
     </article>
   );

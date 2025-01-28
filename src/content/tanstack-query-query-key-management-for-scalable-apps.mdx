@@ -128,7 +128,7 @@ we:
 import { queryOptions } from "@tanstack/react-query";
 
 // Create one factory for all post-related queries
-export const postQueryKeys = {
+export const postsQueries = {
   // Keep `queryKey` and `queryFn` close (using queryOptions to bundle them)
 
   // Use const assertions for better type inference
@@ -140,28 +140,31 @@ export const postQueryKeys = {
   // Compose from simpler keys
   allList: () =>
     queryOptions({
-      queryKey: [...postQueryKeys.all(), "list"] as const,
+      queryKey: [...postsQueries.all().queryKey, "list"] as const,
     }),
 
   // A key that includes a query function as well
-  list: ({ sort, order }: PostSortingCriteria) =>
+  list: ({ direction, sortBy }: PostsSortCriteria) =>
     queryOptions({
-      queryKey: [...postQueryKeys.allList(), { sort, order }],
-      queryFn: () => fetchPosts({ sort, order }),
+      queryKey: [
+        ...postsQueries.allList().queryKey,
+        { direction, sortBy },
+      ] as const,
+      queryFn: () => fetchPosts(sortBy, direction),
     }),
 
   // A detail key that extends the base key
-  detail: (id: number) =>
+  details: (postId: number) =>
     queryOptions({
-      queryKey: [...postQueryKeys.all(), id],
-      queryFn: () => fetchPost(id),
+      queryKey: ["post", postId] as const,
+      queryFn: () => fetchPostById(postId),
     }),
 
   // A comments key building on the detail key
-  comments: (id: number) =>
+  comments: (postId: number) =>
     queryOptions({
-      queryKey: [...postQueryKeys.detail(id), "comments"],
-      queryFn: () => fetchComments(id),
+      queryKey: [...postsQueries.details(postId).queryKey, "comments"] as const,
+      queryFn: () => fetchPostComments(postId),
     }),
 };
 ```
@@ -200,7 +203,7 @@ Because everything is centrally defined, you only need to call the relevant fact
 
 Query Key Factories keep your Tanstack Query usage clean, organized, and easier to maintain. By structuring keys around a resource, composing them to avoid duplication, and returning the full set of query options, you’ll have a more consistent, scalable, and discoverable data-fetching layer.
 
-There’s a community library called <CustomLink href="https://github.com/lukemorales/query-key-factory">query-key-factory</CustomLink> that provides utilities for structuring and managing Tanstack Query keys. It’s well worth checking out if you’re interested in this pattern. The main caveat is that it closely tracks Tanstack Query updates—so whenever Tanstack Query evolves, this library may require an update as well.
+There’s a community library called <CustomLink href="https://github.com/lukemorales/query-key-factory">query-key-factory</CustomLink> that provides utilities for structuring and managing Tanstack Query keys. It’s well worth checking out if you’re interested in this pattern.
 
 And other resources I found helpful:
 
@@ -218,4 +221,8 @@ And other resources I found helpful:
 
 4. <CustomLink href="https://www.youtube.com/watch?v=8KWMOCW6LCU">
      Tanstack Query, Query Keys Best Practices (YouTube)
+   </CustomLink>
+
+5. <CustomLink href="https://github.com/inam95/tanstack-playground">
+     Example code for this post
    </CustomLink>

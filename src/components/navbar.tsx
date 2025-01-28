@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { ModeToggle } from "./mode-toggle";
 import { Logo } from "./logo";
 import { Icons } from "./icons";
@@ -21,16 +21,16 @@ export function Navbar() {
           </Link>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Link
-              href="https://github.com/yourusername"
+              href="https://github.com/inam95"
               target="_blank"
-              className="hover:text-[hsl(var(--accent))] transition-colors transform hover:scale-110 transition-transform duration-200"
+              className="hover:text-[hsl(var(--accent))] transition-colors transform hover:scale-110 duration-200"
             >
               <Icons.gitHub className="h-4 w-4 sm:h-5 sm:w-5" />
             </Link>
             <Link
-              href="https://linkedin.com/in/yourusername"
+              href="https://x.com/itzInam95"
               target="_blank"
-              className="hover:text-[hsl(var(--accent))] transition-colors transform hover:scale-110 transition-transform duration-200"
+              className="hover:text-[hsl(var(--accent))] transition-colors transform hover:scale-110 duration-200"
             >
               <Icons.twitter className="h-4 w-4 sm:h-5 sm:w-5" />
             </Link>

@@ -8,6 +8,7 @@ import "./globals.css";
 import { Footer } from "@/components/footer";
 
 const inter = Inter({
+  subsets: ["latin"],
   variable: "--font-inter",
 });
 

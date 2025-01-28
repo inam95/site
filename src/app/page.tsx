@@ -1,4 +1,3 @@
-import QueryPagination from "@/components/query-pagination";
 import { Card } from "@/components/ui/card";
 import { getAllContent } from "@/lib/blogs";
 import { formatDate } from "@/lib/utils";
@@ -19,7 +18,7 @@ export default async function Page({ searchParams }: Props) {
   const posts = await getAllContent();
 
   const currentPage = page ? parseInt(page) : 1;
-  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
+  // const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
   const displayPosts = posts.slice(
     (currentPage - 1) * POST_PER_PAGE,

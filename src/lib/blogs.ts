@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 
 import { Callout } from "@/components/mdx-components/callout";
 import { CustomLink } from "@/components/mdx-components/custom-link";
+import { CustomImage } from "@/components/mdx-components/custom-image";
 import { sortPosts } from "./utils";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isBlogHeaderData(data: any): data is BlogMetadata {
@@ -91,6 +92,7 @@ export async function getPostBySlug(slug: string) {
     components: {
       Callout,
       CustomLink,
+      CustomImage,
     },
   });
 
